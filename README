@@ -1,0 +1,197 @@
+MVL Stereo Video Processor
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+(C) 2014 Rok Mandeljc <rok.mandeljc@fe.uni-lj.si>
+Machine Vision Laboratory
+University of Ljubljana, Faculty of Electrical Engineering
+
+
+1. Introduction
+~~~~~~~~~~~~~~~
+Machine Vision Laboratory (MVL) Stereo Video Processor is a command-line
+stereo video processing utility, based on the stereo pipeline elements
+from MVL Stereo Toolbox.
+
+It supports processing of separate and combined left/right video streams,
+outputting rectified images, computed disparity maps and reprojected points
+for each frame.
+
+
+2. Installation
+~~~~~~~~~~~~~~~
+
+MVL Stereo Video Processor has following dependencies:
+- C++ compiler and CMake
+- libmvl_stereo_pipeline library from MVL Stereo Toolbox
+- Boost 1.42 (program_options)
+- Qt 5
+- OpenCV
+
+To build the program, use cmake; in unpacked source directory, issue:
+
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
+make
+make install
+
+The above sequence configures, builds and installs the program into
+/usr/local/bin.
+
+If MVL Stereo Toolbox is installed in a path not searched by pkg-config
+by default (e.g., /usr/local prefix), you need to supply the path via
+environment variable:
+PKG_CONFIG_PATH=/usr/local/lib64/pkgconfig cmake <the rest of options>
+
+
+3. Use
+~~~~~~
+
+The program supports several operation modes, depending on provided
+arguments. Below are shown some illustrative examples; for full list of
+command-line options, consult the output of program run with --help option.
+
+
+3.1 Input video specification and output formats
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The input images can be provided to program as either single video file
+in which left and right image are stacked side by side, or as two
+separate video files. (It is also possible to specify sequences of images;
+see Section 3.6)
+
+Three different types of output can be obtained, either individually, or
+all at the same time: rectified images, disparity maps and reprojected
+points. The output is controlled by --output-format-* switches; the
+important note is that frame number in output format is denoted using
+%{f} placeholder, which can also specify precision, as in, for example,
+%{f|04d} (which will cause substitution with 0001, 0002, and so on).
+
+
+3.2 Rectified images
+~~~~~~~~~~~~~~~~~~~~
+In order to obtain rectified images, stereo calibration file, exported
+from MVL Stereo Toolbox, needs to be provided via --stereo-calibration
+option.
+
+The format for rectified images is specified by --output-format-rectified.
+The left and right images can be stored either to individual files, or
+combined to a single frame if --combine-rectified-images option is used.
+
+If images are to be stored to separate files, additional placeholder in
+filename format, %{s}, is used to be substituted by L or R.
+
+Output rectified images can be stored in any format supported by OpenCV's
+cv::imwrite().
+
+
+In the following example, a single combined input video is used to
+produce separate rectified images, which are names /tmp/rectified/1L.jpg,
+/tmp/rectified/1R.jpg, /tmp/rectified/2L.jpg, /tmp/rectified/2R.jpg, etc.
+
+mvl-stereo-video-processor \
+    --input-combined=/tmp/input-video.avi \
+    --stereo-calibration=/tmp/stereo-calibration.yaml \
+    --output-format-rectified="/tmp/rectified/%{f}%{s}.jpg"
+
+
+In the following example, two separate input videos are used to produce
+combined rectified images, which are names /tmp/rectified/01.png,
+/tmp/rectified/02.png, and so on.
+
+mvl-stereo-video-processor \
+    --input-left=/tmp/input-video-right.avi \
+    --input-right=/tmp/input-video-right.avi \
+    --combine-rectified-images \
+    --stereo-calibration=/tmp/stereo-calibration.yaml \
+    --output-format-rectified="/tmp/rectified/%{f|02d}.jpg"
+
+
+3.3 Frame range
+~~~~~~~~~~~~~~~
+It is also possible to specify a range of frames to be processed, using
+--start-frame and --end-frame option. If these options are omitted, the
+sequence is processed from the beginning and to the end, respectively.
+Otherwise, frames before start frame are omitted and the processing stops
+after the end frame is processed.
+
+
+The following example processes only frames from 100 to 150 (assuming
+that the input video contains at least that many frames).
+
+mvl-stereo-video-processor \
+    --input-combined=/tmp/input-video.avi \
+    --stereo-calibration=/tmp/stereo-calibration.yaml \
+    --start-frame=100 \
+    --end-frame=150 \
+    --output-format-rectified="/tmp/rectified/%{f}%{s}.jpg"
+
+
+3.4 Disparity maps
+~~~~~~~~~~~~~~~~~~
+In order to obtain disparity maps, stereo method configuration, exported
+from MVL Stereo Toolbox, must be provided via --stereo-method-config option.
+In order to compute stereo disparity, rectified images are needed, however,
+stereo calibration can be omitted if the input frames are already rectified.
+
+The disparity maps are stored in a format governed by --output-format-disparity
+option. If the resulting file name has a valid image format suffix, disparity
+is stored as a grayscale image. If the suffix is .yml, .yaml or .xml, then
+OpenCV's cv::FileStorage is used to serialize the resulting matrix. If
+.bin suffix is used, the custom binary format implemented by MVL Stereo Toolbox
+is used instead.
+
+Note that the stereo method plugin to use is determined from the provided
+stereo method configuration file.
+
+
+mvl-stereo-video-processor \
+    --input-combined=/tmp/input-video.avi \
+    --stereo-calibration=/tmp/stereo-calibration.yaml \
+    --stereo-method-config=/tmp/stereo-method-bm.yaml \
+    --output-format-disparity="/tmp/disparity/%{f|02d}.bin"
+    
+
+3.5 Reprojected points
+~~~~~~~~~~~~~~~~~~~~~~
+In order to obtain reprojected points, both stereo calibration
+(--stereo-calibration) and stereo method configuration (--stereo-method-config)
+must be provided.
+
+The output format is governed by --output-format-reprojected option; the
+filename's suffix can be either .yml, .yaml or .xml (for OpenCV's
+cv::FileStorage serialization) or .bin (for binary format implemented by
+MVL Stereo Toolbox).
+
+
+In the following example, all outputs are obtained by the same time:
+
+mvl-stereo-video-processor \
+    --input-combined=/tmp/input-video.avi \
+    --stereo-calibration=/tmp/stereo-calibration.yaml \
+    --stereo-method-config=/tmp/stereo-method-bm.yaml \
+    --output-format-rectified="/tmp/rectified/%{f|04d}%{s}.jpg"
+    --output-format-disparity="/tmp/disparity/%{f|04d}.bin"
+    --output-format-reprojected="/tmp/reprojected/%{f|04d}.bin"
+
+
+3.6 Input videos as sequences of frames
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+If OpenCV is build with FFMPEG video capture support, the input videos
+can also be given as sequences of frames, where %d (or %04d, for example)
+is used as frame number format specifier (see FFMPEG documentation for
+details). Note that while --start-frame and --end-frame arguments apply
+just as with regular video input, the whole sequence of frames needs to
+be present in order for OpenCV's FFMPEG video capture to recognise it as
+valid.
+
+In the following example, we have stereo sequences stored as frames in
+a common folder, /tmp/stereo-sequence. The frames are called image-1L.jpg,
+image-2L.jpg, image-3L.jpg, ..., image-1R.jpg, image-2R.jpg, image-3R.jpg,
+and so on. The program is used to produce a series of files containing
+reprojected points
+
+mvl-stereo-video-processor \
+    --input-left=/tmp/stereo-sequence/image-%dL.jpg \
+    --input-right=/tmp/stereo-sequence/image-%dR.jpg \
+    --stereo-calibration=/tmp/stereo-calibration.yaml \
+    --stereo-method-config=/tmp/stereo-method-bm.yaml \
+    --output-format-reprojected="/tmp/output/reprojected-%{f}.bin"
