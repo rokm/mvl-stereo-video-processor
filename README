@@ -21,10 +21,10 @@ for each frame.
 
 MVL Stereo Video Processor has following dependencies:
 - C++ compiler and CMake
-- libmvl_stereo_pipeline library from MVL Stereo Toolbox
-- Boost 1.42 (program_options)
+- libmvl_stereo_pipeline library from MVL Stereo Toolbox >= 2.0.0
+- Boost >= 1.42 (program_options)
 - Qt 5
-- OpenCV
+- OpenCV >= 3.0.0
 
 To build the program, use cmake; in unpacked source directory, issue:
 
@@ -148,7 +148,7 @@ mvl-stereo-video-processor \
     --stereo-calibration=/tmp/stereo-calibration.yaml \
     --stereo-method-config=/tmp/stereo-method-bm.yaml \
     --output-format-disparity="/tmp/disparity/%{f|02d}.bin"
-    
+
 
 3.5 Reprojected points
 ~~~~~~~~~~~~~~~~~~~~~~

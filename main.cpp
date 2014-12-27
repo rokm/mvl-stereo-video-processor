@@ -1,6 +1,6 @@
 /*
  * MVL Stereo Video Processor
- * Copyright (C) 2014 Rok Mandeljc
+ * Copyright (C) 2014-2015 Rok Mandeljc
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,14 +22,16 @@
 #include <boost/any.hpp>
 #include <boost/program_options.hpp>
 
-#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/videoio.hpp>
 
-#include <stereo_pipeline.h>
-#include <plugin_manager.h>
-#include <plugin_factory.h>
-#include <stereo_rectification.h>
-#include <stereo_method.h>
-#include <stereo_reprojection.h>
+#include <stereo-pipeline/pipeline.h>
+#include <stereo-pipeline/plugin_manager.h>
+#include <stereo-pipeline/plugin_factory.h>
+#include <stereo-pipeline/rectification.h>
+#include <stereo-pipeline/reprojection.h>
+#include <stereo-pipeline/stereo_method.h>
+#include <stereo-pipeline/utils.h>
 
 #include <iostream>
 #include <fstream>
@@ -49,11 +51,11 @@ static void validate (boost::any &v, const std::vector<std::string> &values, QSt
     const std::string &s = validators::get_single_string(values);
 
     v = boost::any(QString::fromStdString(s));
-} 
+}
 
 // Universal string formatter
 namespace Utils {
-    
+
 static QString formatString (const QString &format, const QHash<QString, QVariant> &dictionary)
 {
     QString output;
@@ -133,9 +135,9 @@ static int run_processor (int argc, char **argv)
     QString outputFormatDisparity;
     QString outputFormatReprojected;
 
-    StereoRectification *stereoRectification = NULL;
+    MVL::StereoToolbox::Pipeline::Rectification *stereoRectification = NULL;
     QObject *stereoMethod = NULL;
-    StereoReprojection *stereoReprojection = NULL;
+    MVL::StereoToolbox::Pipeline::Reprojection *stereoReprojection = NULL;
 
     // Video source
     bool useCombinedSource;
@@ -145,7 +147,7 @@ static int run_processor (int argc, char **argv)
     // *** Command-line parser ***
     boost::program_options::options_description commandLineArguments("USV video processor");
     boost::program_options::variables_map optionsMap;
-    
+
     // Setup command-line arguments
     boost::program_options::options_description argMandatory("Mandatory arguments");
 
@@ -233,7 +235,7 @@ static int run_processor (int argc, char **argv)
     // Create rectitifaction and load stereo calibration
     if (!stereoCalibrationFile.isEmpty()) {
         qDebug() << "Setting up rectification:" << qPrintable(stereoCalibrationFile);
-        stereoRectification = new StereoRectification();
+        stereoRectification = new MVL::StereoToolbox::Pipeline::Rectification();
         try {
             stereoRectification->loadStereoCalibration(stereoCalibrationFile);
         } catch (QString error) {
@@ -252,16 +254,16 @@ static int run_processor (int argc, char **argv)
         if (!storage.isOpened()) {
             throw QString("Failed to open OpenCV file storage on '%1'").arg(stereoMethodFile);
         }
-        
+
         std::string methodName;
         storage["MethodName"] >> methodName;
 
         // Traverse list of plugins and try to find stereo method based on
         // its name
-        PluginManager pluginManager;
+        MVL::StereoToolbox::Pipeline::PluginManager pluginManager;
         foreach (QObject *pluginFactoryObject, pluginManager.getAvailablePlugins()) {
-            PluginFactory *pluginFactory = qobject_cast<PluginFactory *>(pluginFactoryObject);
-            if (pluginFactory->getPluginType() == PluginFactory::PluginStereoMethod) {
+            MVL::StereoToolbox::Pipeline::PluginFactory *pluginFactory = qobject_cast<MVL::StereoToolbox::Pipeline::PluginFactory *>(pluginFactoryObject);
+            if (pluginFactory->getPluginType() == MVL::StereoToolbox::Pipeline::PluginFactory::PluginStereoMethod) {
                 if (pluginFactory->getShortName().toStdString() == methodName) {
                     stereoMethod = pluginFactory->createObject();
                     break;
@@ -275,7 +277,7 @@ static int run_processor (int argc, char **argv)
 
         // Load config
         try {
-            qobject_cast<StereoMethod *>(stereoMethod)->loadParameters(stereoMethodFile);
+            qobject_cast<MVL::StereoToolbox::Pipeline::StereoMethod *>(stereoMethod)->loadParameters(stereoMethodFile);
         } catch (QString error) {
             throw QString("Failed to load method parameters: %1").arg(error);
         }
@@ -284,7 +286,7 @@ static int run_processor (int argc, char **argv)
     // Create reprojection (only if we have rectification available!)
     if (stereoRectification) {
         qDebug() << "Setting up reprojection object...";
-        stereoReprojection = new StereoReprojection();
+        stereoReprojection = new MVL::StereoToolbox::Pipeline::Reprojection();
         stereoReprojection->setReprojectionMatrix(stereoRectification->getReprojectionMatrix());
     }
 
@@ -344,7 +346,7 @@ static int run_processor (int argc, char **argv)
         msg += "...";
         qDebug() << qPrintable(msg);
     }
-    
+
     for (int frame = 0; ; frame++) {
         // Read frame
         if (useCombinedSource) {
@@ -406,7 +408,7 @@ static int run_processor (int argc, char **argv)
         // Stereo method
         if (stereoMethod) {
             // Compute disparity
-            qobject_cast<StereoMethod *>(stereoMethod)->computeDisparityImage(imageRectifiedL, imageRectifiedR, disparity, numDisparities);
+            qobject_cast<MVL::StereoToolbox::Pipeline::StereoMethod *>(stereoMethod)->computeDisparityImage(imageRectifiedL, imageRectifiedR, disparity, numDisparities);
 
             if (!outputFormatDisparity.isEmpty()) {
                 QString filename = Utils::formatString(outputFormatDisparity, QHash<QString, QVariant>({ { "f", frame }, }));
@@ -423,7 +425,7 @@ static int run_processor (int argc, char **argv)
                 } else if (ext == "bin") {
                     // Save raw disparity in custom binary matrix format
                     try {
-                        StereoPipeline::writeMatrixToBinaryFile(disparity, filename);
+                        MVL::StereoToolbox::Utils::writeMatrixToBinaryFile(disparity, filename);
                     } catch (QString error) {
                         throw QString("Failed to save binary file %1: %2").arg(filename).arg(error);
                     }
@@ -459,7 +461,7 @@ static int run_processor (int argc, char **argv)
                 } else if (ext == "bin") {
                     // Save raw matrix in custom binary matrix format
                     try {
-                        StereoPipeline::writeMatrixToBinaryFile(reprojection, filename);
+                        MVL::StereoToolbox::Utils::writeMatrixToBinaryFile(reprojection, filename);
                     } catch (QString error) {
                         throw QString("Failed to save binary file %1: %2").arg(filename).arg(error);
                     }
