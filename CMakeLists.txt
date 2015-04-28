@@ -30,7 +30,11 @@ add_executable(mvl-stereo-video-processor
     main.cpp
 )
 
-target_link_libraries(mvl-stereo-video-processor ${Boost_LIBRARIES})
+if(NOT MSVC)
+    # On Visual Studio compilers Boost headers request automatic
+    # linking to corresponding libraries...
+    target_link_libraries(mvl-stereo-video-processor ${Boost_LIBRARIES})
+endif()
 target_link_libraries(mvl-stereo-video-processor opencv_core opencv_imgcodecs opencv_videoio)
 target_link_libraries(mvl-stereo-video-processor ${STEREO_PIPELINE_LIBRARIES})
 qt5_use_modules(mvl-stereo-video-processor Core)
