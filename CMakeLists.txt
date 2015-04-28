@@ -15,6 +15,10 @@ find_package(Qt5Core REQUIRED)
 find_package(Boost 1.42 COMPONENTS program_options REQUIRED)
 
 include_directories(${OpenCV_INCLUDE_DIRS})
+link_directories(${OpenCV_LIBRARY_DIRS})
+
+include_directories(${Boost_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIRS})
 
 # Stereo pipeline library
 pkg_check_modules(STEREO_PIPELINE REQUIRED libmvl_stereo_pipeline>=2.0.0)
