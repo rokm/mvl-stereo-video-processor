@@ -360,6 +360,9 @@ static int run_processor (int argc, char **argv)
     }
 
     for (int frame = 0; ; frame++) {
+        QHash<QString, QVariant> variableMap;
+        variableMap["f"] = frame;
+
         // Read frame
         if (useCombinedSource) {
             if (!captureCombined.read(imageIn)) {
@@ -399,15 +402,17 @@ static int run_processor (int argc, char **argv)
                     imageRectifiedR.copyTo( imageRectifiedCombined(cv::Rect(imageRectifiedCombined.cols/2, 0, imageRectifiedCombined.cols/2, imageRectifiedCombined.rows)) );
 
                     // Save
-                    QString filename = Utils::formatString(outputFormatRectified, QHash<QString, QVariant>({ { "f", frame }, }));
+                    QString filename = Utils::formatString(outputFormatRectified, variableMap);
                     cv::imwrite(filename.toStdString(), imageRectifiedCombined);
                 } else {
                     // Save left
-                    QString filenameLeft = Utils::formatString(outputFormatRectified, QHash<QString, QVariant>({ { "f", frame }, { "s", "L" }, }));
+                    variableMap["s"] = "L";
+                    QString filenameLeft = Utils::formatString(outputFormatRectified, variableMap);
                     cv::imwrite(filenameLeft.toStdString(), imageRectifiedL);
 
                     // Save right
-                    QString filenameRight = Utils::formatString(outputFormatRectified, QHash<QString, QVariant>({ { "f", frame }, { "s", "R" }, }));
+                    variableMap["s"] = "R";
+                    QString filenameRight = Utils::formatString(outputFormatRectified, variableMap);
                     cv::imwrite(filenameRight.toStdString(), imageRectifiedR);
                 }
             }
@@ -423,7 +428,7 @@ static int run_processor (int argc, char **argv)
             qobject_cast<MVL::StereoToolbox::Pipeline::StereoMethod *>(stereoMethod)->computeDisparityImage(imageRectifiedL, imageRectifiedR, disparity, numDisparities);
 
             if (!outputFormatDisparity.isEmpty()) {
-                QString filename = Utils::formatString(outputFormatDisparity, QHash<QString, QVariant>({ { "f", frame }, }));
+                QString filename = Utils::formatString(outputFormatDisparity, variableMap);
                 QString ext = QFileInfo(filename).completeSuffix();
 
                 if (ext == "xml" || ext == "yml" || ext == "yaml") {
@@ -459,7 +464,7 @@ static int run_processor (int argc, char **argv)
             stereoReprojection->reprojectStereoDisparity(disparity, reprojection);
 
             if (!outputFormatReprojected.isEmpty()) {
-                QString filename = Utils::formatString(outputFormatReprojected, QHash<QString, QVariant>({ { "f", frame }, }));
+                QString filename = Utils::formatString(outputFormatReprojected, variableMap);
                 QString ext = QFileInfo(filename).completeSuffix();
 
                 if (ext == "xml" || ext == "yml" || ext == "yaml") {
