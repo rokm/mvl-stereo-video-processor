@@ -28,12 +28,14 @@ else()
     # ... otherwise, have user specify the path to toolbox installation
 	set(MVL_STEREO_TOOLBOX_DIR "" CACHE PATH "Path to MVL Stereo Toolbox")
 
-	set(STEREO_PIPELINE_INCLUDE_DIRS "${MVL_STEREO_TOOLBOX_DIR}/include/MVL" CACHE PATH "Path to MVL Stereo Toolbox headers")
-	set(STEREO_PIPELINE_LIBRARY_DIRS "${MVL_STEREO_TOOLBOX_DIR}/lib" CACHE PATH "Path to MVL Stereo Toolbox library directory")
-    mark_as_advanced(STEREO_PIPELINE_INCLUDE_DIRS STEREO_PIPELINE_LIBRARY_DIRS)
+	set(STEREO_PIPELINE_INCLUDE_DIRS "${MVL_STEREO_TOOLBOX_DIR}/include/MVL")
+	set(STEREO_PIPELINE_LIBRARY_DIRS "${MVL_STEREO_TOOLBOX_DIR}/lib")
 
 	set(STEREO_PIPELINE_LIBRARIES mvl_stereo_pipeline)
 endif()
+
+include_directories(${STEREO_PIPELINE_INCLUDE_DIRS})
+link_directories(${STEREO_PIPELINE_LIBRARY_DIRS})
 
 # *** Stereo rectification ***
 add_executable(mvl-stereo-video-processor
