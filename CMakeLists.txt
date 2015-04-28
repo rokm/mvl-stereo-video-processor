@@ -9,7 +9,6 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     add_definitions(-std=c++11 -pthread)
 endif()
 
-find_package(PkgConfig REQUIRED)
 find_package(OpenCV 3.0.0 REQUIRED core imgcodecs videoio)
 find_package(Qt5Core REQUIRED)
 find_package(Boost 1.42 COMPONENTS program_options REQUIRED)
@@ -21,9 +20,20 @@ include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 
 # Stereo pipeline library
-pkg_check_modules(STEREO_PIPELINE REQUIRED libmvl_stereo_pipeline>=2.0.0)
-include_directories(${STEREO_PIPELINE_INCLUDE_DIRS})
-link_directories(${STEREO_PIPELINE_LIBRARY_DIRS})
+find_package(PkgConfig QUIET)
+if(PKG_CONFIG_FOUND)
+    # If available, use pkg-config...
+	pkg_check_modules(STEREO_PIPELINE REQUIRED libmvl_stereo_pipeline>=2.0.0)
+else()
+    # ... otherwise, have user specify the path to toolbox installation
+	set(MVL_STEREO_TOOLBOX_DIR "" CACHE PATH "Path to MVL Stereo Toolbox")
+
+	set(STEREO_PIPELINE_INCLUDE_DIRS "${MVL_STEREO_TOOLBOX_DIR}/include/MVL" CACHE PATH "Path to MVL Stereo Toolbox headers")
+	set(STEREO_PIPELINE_LIBRARY_DIRS "${MVL_STEREO_TOOLBOX_DIR}/lib" CACHE PATH "Path to MVL Stereo Toolbox library directory")
+    mark_as_advanced(STEREO_PIPELINE_INCLUDE_DIRS STEREO_PIPELINE_LIBRARY_DIRS)
+
+	set(STEREO_PIPELINE_LIBRARIES mvl_stereo_pipeline)
+endif()
 
 # *** Stereo rectification ***
 add_executable(mvl-stereo-video-processor
