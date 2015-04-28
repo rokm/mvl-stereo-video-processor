@@ -129,6 +129,10 @@ static int run_processor (int argc, char **argv)
 
     int startFrame, endFrame;
 
+    // Calibration
+    float calibrationAlpha;
+    bool calibrationZeroDisparity;
+
     // Output
     bool combineRectifiedImages;
     QString outputFormatRectified;
@@ -170,6 +174,8 @@ static int run_processor (int argc, char **argv)
         ("output-format-rectified", boost::program_options::value<QString>(&outputFormatRectified), "output format for rectified images. %{f} and %{s} tokens are substituted with frame number and side, respectively.")
         ("output-format-disparity", boost::program_options::value<QString>(&outputFormatDisparity), "output format for disparity images. %{f} token is substituted with frame number.")
         ("output-format-reprojected", boost::program_options::value<QString>(&outputFormatReprojected), "output format for reprojected points. %{f} token is substituted with frame number.")
+        ("calibration-alpha", boost::program_options::value<float>(&calibrationAlpha)->default_value(0.0f), "free scaling parameter for stereo pair rectification, ranging from 0 to 1.")
+        ("calibration-zero-disparity", boost::program_options::value<bool>(&calibrationZeroDisparity)->default_value(true), "whether to set CALIB_ZERO_DISPARITY flag when setting up stereo calibration or not.")
     ;
     commandLineArguments.add(argOptional);
 
@@ -243,6 +249,12 @@ static int run_processor (int argc, char **argv)
         } catch (std::exception error) {
             throw QString("Failed to load stereo calibration: %1").arg(error.what());
         }
+
+        qDebug() << " alpha value:" << calibrationAlpha;
+        stereoRectification->setAlpha(calibrationAlpha);
+
+        qDebug() << " set zero disparity flag:" << calibrationZeroDisparity;
+        stereoRectification->setZeroDisparity(calibrationZeroDisparity);
     }
 
     // Create stereo method
