@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.11)
 project(mvl-stereo-video-processor CXX)
 
 include(GNUInstallDirs)
@@ -49,6 +49,6 @@ if(NOT MSVC)
 endif()
 target_link_libraries(mvl-stereo-video-processor opencv_core opencv_imgcodecs opencv_videoio)
 target_link_libraries(mvl-stereo-video-processor ${STEREO_PIPELINE_LIBRARIES})
-qt5_use_modules(mvl-stereo-video-processor Core)
+target_link_libraries(mvl-stereo-video-processor Qt5::Core)
 
 install(TARGETS mvl-stereo-video-processor DESTINATION ${CMAKE_INSTALL_BINDIR})
