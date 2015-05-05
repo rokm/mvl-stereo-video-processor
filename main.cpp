@@ -37,6 +37,10 @@
 #include <fstream>
 #include <string>
 
+#ifdef ENABLE_VRMS
+#include <vrms/reader.h>
+#endif
+
 
 // Add support for QString to boost::program_options
 static void validate (boost::any &v, const std::vector<std::string> &values, QString *, int)
@@ -145,8 +149,11 @@ static int run_processor (int argc, char **argv)
 
     // Video source
     bool useCombinedSource;
+    bool useVrmsSource;
     cv::VideoCapture captureCombined, captureLeft, captureRight;
-
+#ifdef ENABLE_VRMS
+    MVL::VRMS::Reader vrmsReader;
+#endif
 
     // *** Command-line parser ***
     boost::program_options::options_description commandLineArguments("USV video processor");
@@ -230,6 +237,13 @@ static int run_processor (int argc, char **argv)
     if (!inputCombined.isEmpty()) {
         // Using combined video source
         useCombinedSource = true;
+
+        QString suffix = QFileInfo(inputCombined).suffix();
+        if (suffix.toLower() == "vrms") {
+            useVrmsSource = true;
+        } else {
+            useVrmsSource = false;
+        }
     } else {
         // Using left-right video source
         if (inputLeft.isEmpty() || inputRight.isEmpty()) {
@@ -305,10 +319,21 @@ static int run_processor (int argc, char **argv)
     // Open videos
     if (useCombinedSource) {
         // Combined
-        qDebug() << "Opening combined video source:" << qPrintable(inputCombined);
-        captureCombined.open(inputCombined.toStdString());
-        if (!captureCombined.isOpened()) {
-            throw QString("Failed to open combined video source %1").arg(inputCombined);
+        if (useVrmsSource) {
+#ifdef ENABLE_VRMS
+            qDebug() << "Opening VRMS video source:" << qPrintable(inputCombined);
+            if (!vrmsReader.openFile(inputCombined)) {
+                throw QString("Failed to open VRMS video source %1").arg(inputCombined);
+            }
+#else
+            throw QString("VRMS support not available!");
+#endif
+        } else {
+            qDebug() << "Opening combined video source:" << qPrintable(inputCombined);
+            captureCombined.open(inputCombined.toStdString());
+            if (!captureCombined.isOpened()) {
+                throw QString("Failed to open combined video source %1").arg(inputCombined);
+            }
         }
     } else {
         // Left
@@ -365,14 +390,24 @@ static int run_processor (int argc, char **argv)
 
         // Read frame
         if (useCombinedSource) {
-            if (!captureCombined.read(imageIn)) {
-                qDebug() << "End of video reached";
-                break;
-            }
+            if (useVrmsSource) {
+#ifdef ENABLE_VRMS
+                if (!vrmsReader.grabNextFrame()) {
+                    qDebug() << "End of video reached";
+                    break;
+                }
+                vrmsReader.getImages(imageInL, imageInR);
+#endif
+            } else {
+                if (!captureCombined.read(imageIn)) {
+                    qDebug() << "End of video reached";
+                    break;
+                }
 
-            // Split combined frame into left and right
-            imageIn(cv::Rect(0, 0, imageIn.cols/2, imageIn.rows)).copyTo(imageInL);
-            imageIn(cv::Rect(imageIn.cols/2, 0, imageIn.cols/2, imageIn.rows)).copyTo(imageInR);
+                // Split combined frame into left and right
+                imageIn(cv::Rect(0, 0, imageIn.cols/2, imageIn.rows)).copyTo(imageInL);
+                imageIn(cv::Rect(imageIn.cols/2, 0, imageIn.cols/2, imageIn.rows)).copyTo(imageInR);
+            }
         } else {
             if (!captureLeft.read(imageInL) || !captureRight.read(imageInR)) {
                 qDebug() << "End of video reached";
