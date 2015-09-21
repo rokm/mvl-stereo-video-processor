@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.11)
-project(mvl-stereo-video-processor CXX)
+project(mvl-stereo-video-processor C CXX)
 
 include(GNUInstallDirs)
 
