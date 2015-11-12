@@ -258,9 +258,9 @@ static int run_processor (int argc, char **argv)
         stereoRectification = new MVL::StereoToolbox::Pipeline::Rectification();
         try {
             stereoRectification->loadStereoCalibration(stereoCalibrationFile);
-        } catch (QString error) {
+        } catch (const QString &error) {
             throw QString("Failed to load stereo calibration: %1").arg(error);
-        } catch (std::exception error) {
+        } catch (const std::exception &error) {
             throw QString("Failed to load stereo calibration: %1").arg(error.what());
         }
 
@@ -304,7 +304,7 @@ static int run_processor (int argc, char **argv)
         // Load config
         try {
             qobject_cast<MVL::StereoToolbox::Pipeline::StereoMethod *>(stereoMethod)->loadParameters(stereoMethodFile);
-        } catch (QString error) {
+        } catch (const QString &error) {
             throw QString("Failed to load method parameters: %1").arg(error);
         }
     }
@@ -471,21 +471,21 @@ static int run_processor (int argc, char **argv)
                     try {
                         cv::FileStorage fs(filename.toStdString(), cv::FileStorage::WRITE);
                         fs << "disparity" << disparity;
-                    } catch (cv::Exception error) {
+                    } catch (const cv::Exception &error) {
                         throw QString("Failed to save matrix to file %1: %2").arg(filename).arg(QString::fromStdString(error.what()));
                     }
                 } else if (ext == "bin") {
                     // Save raw disparity in custom binary matrix format
                     try {
                         MVL::StereoToolbox::Utils::writeMatrixToBinaryFile(disparity, filename);
-                    } catch (QString error) {
+                    } catch (const QString &error) {
                         throw QString("Failed to save binary file %1: %2").arg(filename).arg(error);
                     }
                 } else {
                     // Save disparity visualization as image using cv::imwrite
                     try {
                         cv::imwrite(filename.toStdString(), disparity);
-                    } catch (cv::Exception error) {
+                    } catch (const cv::Exception &error) {
                         throw QString("Failed to save image %1: %2").arg(filename).arg(QString::fromStdString(error.what()));
                     }
                 }
@@ -507,15 +507,21 @@ static int run_processor (int argc, char **argv)
                     try {
                         cv::FileStorage fs(filename.toStdString(), cv::FileStorage::WRITE);
                         fs << "points" << reprojection;
-                    } catch (cv::Exception error) {
+                    } catch (const cv::Exception &error) {
                         throw QString("Failed to save matrix to file %1: %2").arg(filename).arg(QString::fromStdString(error.what()));
                     }
                 } else if (ext == "bin") {
                     // Save raw matrix in custom binary matrix format
                     try {
                         MVL::StereoToolbox::Utils::writeMatrixToBinaryFile(reprojection, filename);
-                    } catch (QString error) {
+                    } catch (const QString &error) {
                         throw QString("Failed to save binary file %1: %2").arg(filename).arg(error);
+                    }
+                } else if (ext == "pcd") {
+                    try {
+                        MVL::StereoToolbox::Utils::writePointCloudToPcdFile(imageRectifiedL, reprojection, filename, true);
+                    } catch (const QString &error) {
+                        throw QString("Failed to save PCD file %1: %2").arg(filename).arg(error);
                     }
                 } else {
                     throw QString("Invalid output format for reprojection: %1").arg(ext);
@@ -534,10 +540,10 @@ int main (int argc, char **argv)
 {
     try {
         return run_processor(argc, argv);
-    } catch (QString &error) {
+    } catch (const QString &error) {
         qDebug() << "ERROR:" << qPrintable(error);
         return -1;
-    } catch (std::exception &e) {
+    } catch (const std::exception &e) {
         std::cerr << "ERROR: " << e.what() << std::endl;
         return -2;
     } catch (...) {
