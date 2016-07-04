@@ -460,7 +460,7 @@ static int run_processor (int argc, char **argv)
         // Stereo method
         if (stereoMethod) {
             // Compute disparity
-            qobject_cast<MVL::StereoToolbox::Pipeline::StereoMethod *>(stereoMethod)->computeDisparityImage(imageRectifiedL, imageRectifiedR, disparity, numDisparities);
+            qobject_cast<MVL::StereoToolbox::Pipeline::StereoMethod *>(stereoMethod)->computeDisparity(imageRectifiedL, imageRectifiedR, disparity, numDisparities);
 
             if (!outputFormatDisparity.isEmpty()) {
                 QString filename = Utils::formatString(outputFormatDisparity, variableMap);
