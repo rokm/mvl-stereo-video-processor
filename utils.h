@@ -1,5 +1,5 @@
 /*
- * MVL Stereo Processor: main
+ * MVL Stereo Processor: utility functions
  * Copyright (C) 2014-2016 Rok Mandeljc
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,29 +17,26 @@
  *
  */
 
-#include "processor.h"
-#include "debug.h"
+#ifndef MVL_STEREO_PROCESSOR__UTILS_H
+#define MVL_STEREO_PROCESSOR__UTILS_H
+
+#include <QtCore>
 
 
-using namespace MVL::StereoProcessor;
+namespace MVL {
+namespace StereoProcessor {
+namespace Utils {
+
+// Universal string formatter
+QString formatString (const QString &format, const QHash<QString, QVariant> &dictionary);
+
+// Create parent directory if it does not exist
+void ensureParentDirectoryExists (const QString &filename);
 
 
-int main (int argc, char **argv)
-{
-    QCoreApplication app(argc, argv);
-    QCoreApplication::setApplicationName("MVL Stereo Processor");
-    QCoreApplication::setApplicationVersion("1.0");
+} // Utils
+} // StereoProcessor
+} // MVL
 
-    qSetMessagePattern("%{message}");
 
-    Processor processor;
-
-    try {
-        processor.run();
-    } catch (const QString &error) {
-        qCWarning(mvlStereoProcessor) << "ERROR:" << qPrintable(error);
-        return -1;
-    }
-
-    return 0;
-}
+#endif

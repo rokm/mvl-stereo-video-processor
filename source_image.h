@@ -1,5 +1,5 @@
 /*
- * MVL Stereo Processor: main
+ * MVL Stereo Processor: input source: image
  * Copyright (C) 2014-2016 Rok Mandeljc
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,29 +17,28 @@
  *
  */
 
-#include "processor.h"
-#include "debug.h"
+#ifndef MVL_STEREO_PROCESSOR__SOURCE_IMAGE_H
+#define MVL_STEREO_PROCESSOR__SOURCE_IMAGE_H
+
+#include "source.h"
 
 
-using namespace MVL::StereoProcessor;
+namespace MVL {
+namespace StereoProcessor {
 
 
-int main (int argc, char **argv)
+class SourceImage : public Source
 {
-    QCoreApplication app(argc, argv);
-    QCoreApplication::setApplicationName("MVL Stereo Processor");
-    QCoreApplication::setApplicationVersion("1.0");
+public:
+    SourceImage (const QString &filename);
+    virtual ~SourceImage ();
 
-    qSetMessagePattern("%{message}");
+    virtual void getFrame (int frame, cv::Mat &imageLeft, cv::Mat &imageRight);
+};
 
-    Processor processor;
 
-    try {
-        processor.run();
-    } catch (const QString &error) {
-        qCWarning(mvlStereoProcessor) << "ERROR:" << qPrintable(error);
-        return -1;
-    }
+} // StereoProcessor
+} // MVL
 
-    return 0;
-}
+
+#endif

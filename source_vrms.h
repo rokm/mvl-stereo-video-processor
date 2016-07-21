@@ -1,5 +1,5 @@
 /*
- * MVL Stereo Processor: main
+ * MVL Stereo Processor: input source: image: VRMS video file
  * Copyright (C) 2014-2016 Rok Mandeljc
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,29 +17,37 @@
  *
  */
 
-#include "processor.h"
-#include "debug.h"
+#ifndef MVL_STEREO_PROCESSOR__SOURCE_VRMS_H
+#define MVL_STEREO_PROCESSOR__SOURCE_VRMS_H
+
+#include "source.h"
+
+#ifdef ENABLE_VRMS
+#include <vrms/reader.h>
+#endif
 
 
-using namespace MVL::StereoProcessor;
+namespace MVL {
+namespace StereoProcessor {
 
 
-int main (int argc, char **argv)
+class SourceVrms : public Source
 {
-    QCoreApplication app(argc, argv);
-    QCoreApplication::setApplicationName("MVL Stereo Processor");
-    QCoreApplication::setApplicationVersion("1.0");
+public:
+    SourceVrms (const QString &filename);
+    virtual ~SourceVrms ();
 
-    qSetMessagePattern("%{message}");
+    virtual void getFrame (int frame, cv::Mat &imageLeft, cv::Mat &imageRight);
 
-    Processor processor;
+protected:
+#ifdef ENABLE_VRMS
+    MVL::VRMS::Reader *reader;
+#endif
+};
 
-    try {
-        processor.run();
-    } catch (const QString &error) {
-        qCWarning(mvlStereoProcessor) << "ERROR:" << qPrintable(error);
-        return -1;
-    }
 
-    return 0;
-}
+} // StereoProcessor
+} // MVL
+
+
+#endif

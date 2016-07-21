@@ -1,5 +1,5 @@
 /*
- * MVL Stereo Processor: main
+ * MVL Stereo Processor: debug
  * Copyright (C) 2014-2016 Rok Mandeljc
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,29 +17,21 @@
  *
  */
 
-#include "processor.h"
-#include "debug.h"
+#ifndef MVL_STEREO_PROCESSOR__DEBUG_H
+#define MVL_STEREO_PROCESSOR__DEBUG_H
+
+#include <QLoggingCategory>
 
 
-using namespace MVL::StereoProcessor;
+namespace MVL {
+namespace StereoProcessor {
 
 
-int main (int argc, char **argv)
-{
-    QCoreApplication app(argc, argv);
-    QCoreApplication::setApplicationName("MVL Stereo Processor");
-    QCoreApplication::setApplicationVersion("1.0");
+Q_DECLARE_LOGGING_CATEGORY(mvlStereoProcessor)
 
-    qSetMessagePattern("%{message}");
 
-    Processor processor;
+} // StereoProcess
+} // MVL
 
-    try {
-        processor.run();
-    } catch (const QString &error) {
-        qCWarning(mvlStereoProcessor) << "ERROR:" << qPrintable(error);
-        return -1;
-    }
 
-    return 0;
-}
+#endif
