@@ -164,7 +164,7 @@ stereo calibration can be omitted if the input frames are already rectified.
 
 The disparity maps are stored in a format governed by --output-disparity
 option. If the resulting file name has a valid image format suffix, disparity
-is stored as a grayscale image. If the suffix is .yml, .yaml or .xml, then
+is stored as a color-coded image. If the suffix is .yml, .yaml or .xml, then
 OpenCV's cv::FileStorage is used to serialize the resulting matrix. If
 .bin suffix is used, the custom binary format implemented by MVL Stereo Toolbox
 is used instead.

@@ -225,7 +225,9 @@ void Processor::processFrameRange (const FrameRange &range)
                 } else {
                     // Save disparity visualization as image using cv::imwrite
                     try {
-                        cv::imwrite(filename.toStdString(), disparity);
+                        cv::Mat visualization;
+                        MVL::StereoToolbox::Utils::createColorCodedDisparityCpu(disparity, visualization, numDisparities);
+                        cv::imwrite(filename.toStdString(), visualization);
                     } catch (const cv::Exception &error) {
                         throw QString("Failed to save image %1: %2").arg(filename).arg(QString::fromStdString(error.what()));
                     }
