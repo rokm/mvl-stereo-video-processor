@@ -44,6 +44,7 @@ SourceVrms::~SourceVrms ()
 
 void SourceVrms::getFrame (int frame, cv::Mat &imageLeft, cv::Mat &imageRight)
 {
+#ifdef ENABLE_VRMS
     // Seek to frame
     try {
         reader->setVideoPosition(frame);
@@ -53,6 +54,11 @@ void SourceVrms::getFrame (int frame, cv::Mat &imageLeft, cv::Mat &imageRight)
 
     // Get images
     reader->getImages(imageLeft, imageRight);
+#else
+    Q_UNUSED(frame)
+    Q_UNUSED(imageLeft)
+    Q_UNUSED(imageRight)
+#endif
 }
 
 
