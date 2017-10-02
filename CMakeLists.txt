@@ -13,7 +13,7 @@ endif()
 find_package(OpenCV 3.0.0 REQUIRED core imgcodecs videoio)
 find_package(Qt5Core REQUIRED)
 
-find_package(libmvl_stereo_pipeline 2.0.0 REQUIRED)
+find_package(libmvl_stereo_pipeline 2.1.0 REQUIRED)
 find_package(libvrms 1.0.0 QUIET)
 
 include_directories(${OpenCV_INCLUDE_DIRS})

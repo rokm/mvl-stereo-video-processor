@@ -239,7 +239,7 @@ void Processor::processFrameRange (const FrameRange &range)
 
         // *** Reproject point cloud ***
         if (stereoReprojection) {
-            stereoReprojection->reprojectStereoDisparity(disparity, points);
+            stereoReprojection->reprojectDisparity(disparity, points);
 
             // Export point cloud
             for (const QString &format : outputPoints) {
