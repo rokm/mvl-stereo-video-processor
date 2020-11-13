@@ -10,7 +10,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     add_definitions(-std=c++11)
 endif()
 
-find_package(OpenCV 3.0.0 REQUIRED core imgcodecs videoio)
+find_package(OpenCV REQUIRED core imgcodecs videoio)
 find_package(Qt5Core REQUIRED)
 
 find_package(libmvl_stereo_pipeline 2.1.0 REQUIRED)
