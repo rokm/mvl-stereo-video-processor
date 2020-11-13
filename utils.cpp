@@ -48,7 +48,7 @@ QString formatString (const QString &format, const QHash<QString, QVariant> &dic
                     if (match.lastCapturedIndex() > 1) {
                        fmt = QString("%") + match.capturedRef(2).toString();
                     }
-                    replacement.sprintf(fmt.toLatin1().constData(), d->toString().toUtf8().constData());
+                    replacement = QString::asprintf(fmt.toLatin1().constData(), d->toString().toUtf8().constData());
                     break;
                 }
                 case QVariant::UInt:
@@ -57,7 +57,7 @@ QString formatString (const QString &format, const QHash<QString, QVariant> &dic
                     if (match.lastCapturedIndex() > 1) {
                        fmt = QString("%") + match.capturedRef(2).toString();
                     }
-                    replacement.sprintf(fmt.toLatin1().constData(), d->toInt());
+                    replacement = QString::asprintf(fmt.toLatin1().constData(), d->toInt());
                     break;
                 }
                 default: {
