@@ -218,7 +218,7 @@ void Processor::processFrameRange (const FrameRange &range)
                 } else if (ext == "bin") {
                     // Save raw disparity in custom binary matrix format
                     try {
-                        MVL::StereoToolbox::Utils::writeMatrixToBinaryFile(disparity, filename);
+                        MVL::StereoToolbox::Pipeline::Utils::writeMatrixToBinaryFile(disparity, filename);
                     } catch (const QString &error) {
                         throw QString("Failed to save binary file %1: %2").arg(filename).arg(error);
                     }
@@ -226,7 +226,7 @@ void Processor::processFrameRange (const FrameRange &range)
                     // Save disparity visualization as image using cv::imwrite
                     try {
                         cv::Mat visualization;
-                        MVL::StereoToolbox::Utils::createColorCodedDisparityCpu(disparity, visualization, numDisparities);
+                        MVL::StereoToolbox::Pipeline::Utils::createColorCodedDisparityCpu(disparity, visualization, numDisparities);
                         cv::imwrite(filename.toStdString(), visualization);
                     } catch (const cv::Exception &error) {
                         throw QString("Failed to save image %1: %2").arg(filename).arg(QString::fromStdString(error.what()));
@@ -259,13 +259,13 @@ void Processor::processFrameRange (const FrameRange &range)
                 } else if (ext == "bin") {
                     // Save raw matrix in custom binary matrix format
                     try {
-                        MVL::StereoToolbox::Utils::writeMatrixToBinaryFile(points, filename);
+                        MVL::StereoToolbox::Pipeline::Utils::writeMatrixToBinaryFile(points, filename);
                     } catch (const QString &error) {
                         throw QString("Failed to save binary file %1: %2").arg(filename).arg(error);
                     }
                 } else if (ext == "pcd") {
                     try {
-                        MVL::StereoToolbox::Utils::writePointCloudToPcdFile(rectifiedLeft, points, filename, true);
+                        MVL::StereoToolbox::Pipeline::Utils::writePointCloudToPcdFile(rectifiedLeft, points, filename, true);
                     } catch (const QString &error) {
                         throw QString("Failed to save PCD file %1: %2").arg(filename).arg(error);
                     }
