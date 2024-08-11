@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 2.8.11)
-project(mvl-stereo-processor C CXX)
+cmake_minimum_required(VERSION 3.16)
+project(mvl-stereo-processor VERSION 1.0.0 LANGUAGES CXX)
 
 include(GNUInstallDirs)
 
@@ -15,10 +15,6 @@ find_package(Qt5Core REQUIRED)
 
 find_package(libmvl_stereo_pipeline 2.1.0 REQUIRED)
 find_package(libvrms 1.0.0 QUIET)
-
-include_directories(${OpenCV_INCLUDE_DIRS})
-
-include_directories(${libmvl_stereo_pipeline_INCLUDE_DIRS})
 
 if (libvrms_FOUND)
     include_directories(${libvrms_INCLUDE_DIRS})
@@ -46,11 +42,11 @@ add_executable(mvl-stereo-processor
     utils.cpp
 )
 
-target_link_libraries(mvl-stereo-processor opencv_core opencv_imgcodecs opencv_videoio)
-target_link_libraries(mvl-stereo-processor ${libmvl_stereo_pipeline_LIBRARIES})
-target_link_libraries(mvl-stereo-processor Qt5::Core)
+target_link_libraries(mvl-stereo-processor PRIVATE opencv_core opencv_imgcodecs opencv_videoio)
+target_link_libraries(mvl-stereo-processor PRIVATE mvl_stereo_pipeline)
+target_link_libraries(mvl-stereo-processor PRIVATE Qt5::Core)
 if(libvrms_FOUND)
-    target_link_libraries(mvl-stereo-processor ${libvrms_LIBRARIES})
+    target_link_libraries(mvl-stereo-processor PRIVATE ${libvrms_LIBRARIES})
 endif()
 
 install(TARGETS mvl-stereo-processor DESTINATION ${CMAKE_INSTALL_BINDIR})
