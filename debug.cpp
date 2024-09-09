@@ -24,7 +24,7 @@ namespace MVL {
 namespace StereoProcessor {
 
 
-Q_LOGGING_CATEGORY(mvlStereoProcessor, "mvl.stereo-processor")
+Q_LOGGING_CATEGORY(mvlStereoProcessor, "mvl.stereo-processor", QtWarningMsg)
 
 
 } // StereoProcessor
